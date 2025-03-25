@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Invasión Alienígena - Lobby</title>
+  <!-- Importamos la fuente Orbitron -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="lobby">
+    <h1>Invasión Alienígena</h1>
+    <p>Usa las flechas o las teclas A/D para mover la nave, y la barra espaciadora para disparar. (En móviles, utiliza los controles táctiles que aparecen abajo).</p>
+    <button id="startButton">Comenzar Juego</button>
+  </div>
+  <script>
+    // Al hacer click o presionar Enter, se redirige al juego
+    document.getElementById("startButton").addEventListener("click", function() {
+      window.location.href = "juego.html";
+    });
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        window.location.href = "juego.html";
+      }
+    });
+  </script>
+</body>
+</html>
