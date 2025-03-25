@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
-/* Variables de colores sofisticados */
+/* Variables de colores inspiradas en Nothing */
 :root {
-  --primary-color: #1abc9c;       /* Turquesa brillante */
-  --primary-hover: #16a085;       /* Turquesa oscura */
-  --accent-color: #e67e22;        /* Acente naranja cálido */
-  --overlay-bg: rgba(0, 0, 0, 0.8);
-  --bg-gradient-start: #141e30;   /* Azul muy oscuro */
-  --bg-gradient-middle: #243b55;  /* Azul intermedio */
-  --bg-gradient-end: #2c3e50;     /* Azul grisáceo */
-  --text-color: #ffffff;
+  --primary-color: #f7f7f7;       /* Cian brillante */
+  --primary-hover: #cd0000;       /* Cian un poco más oscuro */
+  --accent-color: #ff4081;        /* Toque sutil en rosa */
+  --overlay-bg: rgba(0, 0, 0, 0.85);
+  --bg-gradient-start: #121212;   /* Negro/Gris muy oscuro */
+  --bg-gradient-middle: #1e1e1e;  /* Gris oscuro */
+  --bg-gradient-end: #2c2c2c;     /* Gris medio oscuro */
+  --text-color: #e0e0e0;          /* Blanco suave */
 }
 
 /* Global resets y box-sizing */
@@ -17,10 +17,10 @@
   box-sizing: border-box;
 }
 
-/* Fondo animado con gradiente sofisticado */
+/* Fondo animado con un degradado sofisticado */
 body {
   margin: 0;
-  background: linear-gradient(-45deg, var(--bg-gradient-start), var(--bg-gradient-middle), var(--bg-gradient-end), #34495e);
+  background: linear-gradient(-45deg, var(--bg-gradient-start), var(--bg-gradient-middle), var(--bg-gradient-end), #3a3a3a);
   background-size: 400% 400%;
   animation: gradientAnimation 20s ease infinite;
   overflow-x: hidden;
@@ -42,7 +42,8 @@ body {
 
 /* Estilos para el lobby (index.html) */
 .lobby {
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
   padding: 20px;
   border-radius: 10px;
   text-align: center;
@@ -58,6 +59,7 @@ body {
 .lobby p {
   font-size: 1.2rem;
   margin-bottom: 1.5rem;
+  color: var(--text-color);
 }
 #startButton {
   font-size: 1.5rem;
@@ -68,9 +70,12 @@ body {
   color: #000;
   cursor: pointer;
   transition: transform 0.3s;
+  box-shadow: 0 0 10px #121212;
 }
 #startButton:hover {
   transform: scale(1.05);
+  background-color: var(--primary-hover);
+  color: var(--primary-color)
 }
 
 /* Encabezado del juego */
@@ -78,6 +83,7 @@ header {
   text-align: center;
   margin-bottom: 20px;
   color: var(--primary-color);
+  
 }
 header h1 {
   font-size: 2.5rem;
@@ -93,6 +99,9 @@ header h1 {
   width: 90%;
   max-width: 600px;
   margin-bottom: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 30px var(--primary-color);
 }
 
 /* Estilos para el canvas del juego */
@@ -170,7 +179,7 @@ canvas {
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
-  background-color: rgba(26, 188, 156, 0.7);
+  background-color: rgba(255, 255, 255, 0.7);
   color: #000;
   box-shadow: 0 0 10px var(--primary-color);
 }
