@@ -9,7 +9,7 @@ spaceshipImg.src = "nave_buena.png";
 const alienImg = new Image();
 alienImg.src = "nave_mala.webp";
 
-// Cargar sprite de explosión (se asume 5 frames horizontales, 64x64 cada uno)
+// Cargar el gif de explosión
 const explosionSprite = new Image();
 explosionSprite.src = "explosion.gif";
 
@@ -44,9 +44,8 @@ let alienSpeed = baseAlienSpeed + (level - 1) * 0.5;
 const alienDrop = 20;
 let aliens = [];
 
-// Arreglos para efectos visuales
-let explosions = [];   // Explosiones al destruir enemigos (usando sprite animado)
-let scorePopups = [];  // Pop-ups de puntuación
+// Arreglos para efectos visuales (score popups, etc.)
+let scorePopups = [];
 
 // Variables para control de estado del juego
 let paused = false;
@@ -61,7 +60,15 @@ function createAliens() {
     for (let col = 0; col < alienCols; col++) {
       const x = alienOffsetLeft + col * (alienWidth + alienPadding);
       const y = alienOffsetTop + row * (alienHeight + alienPadding);
-      aliens.push({ x, y, width: alienWidth, height: alienHeight });
+      // Se añade la propiedad "exploding" y "explosionTimer"
+      aliens.push({ 
+        x, 
+        y, 
+        width: alienWidth, 
+        height: alienHeight, 
+        exploding: false, 
+        explosionTimer: 0 
+      });
     }
   }
 }
@@ -71,46 +78,6 @@ function nextLevel() {
   level++;
   alienSpeed = baseAlienSpeed + (level - 1) * 0.5;
   createAliens();
-}
-
-// SISTEMA DE EXPLOSIONES CON SPRITE
-function addExplosion(x, y) {
-  explosions.push({
-    x: x,
-    y: y,
-    frame: 0,
-    frameCount: 5,
-    frameWidth: 64,
-    frameHeight: 64,
-    frameInterval: 5, // número de frames (ticks) por cambio de sprite
-    frameTimer: 0
-  });
-}
-
-function updateExplosions() {
-  for (let i = explosions.length - 1; i >= 0; i--) {
-    let exp = explosions[i];
-    exp.frameTimer++;
-    if (exp.frameTimer >= exp.frameInterval) {
-      exp.frame++;
-      exp.frameTimer = 0;
-      if (exp.frame >= exp.frameCount) {
-        explosions.splice(i, 1);
-      }
-    }
-  }
-}
-
-function drawExplosions() {
-  explosions.forEach(exp => {
-    ctx.drawImage(
-      explosionSprite,
-      exp.frame * exp.frameWidth, 0, // coordenadas de origen en el sprite
-      exp.frameWidth, exp.frameHeight, // tamaño del frame
-      exp.x - exp.frameWidth / 2, exp.y - exp.frameHeight / 2, // posición destino centrada
-      exp.frameWidth, exp.frameHeight
-    );
-  });
 }
 
 // SISTEMA DE SCORE POPUPS
@@ -167,13 +134,17 @@ function drawBullets() {
   ctx.restore();
 }
 
-// Dibuja los enemigos usando la imagen "nave_mala"
+// Dibuja los enemigos. Si la nave está en "exploding", se dibuja el gif explosion.gif.
 function drawAliens() {
   ctx.save();
   ctx.shadowBlur = 20;
   ctx.shadowColor = "lime";
   aliens.forEach(alien => {
-    ctx.drawImage(alienImg, alien.x, alien.y, alien.width, alien.height);
+    if (alien.exploding) {
+      ctx.drawImage(explosionSprite, alien.x, alien.y, alien.width, alien.height);
+    } else {
+      ctx.drawImage(alienImg, alien.x, alien.y, alien.width, alien.height);
+    }
   });
   ctx.restore();
 }
@@ -200,9 +171,12 @@ function moveBullets() {
 function moveAliens() {
   let hitEdge = false;
   aliens.forEach(alien => {
-    alien.x += alienSpeed * alienDirection;
-    if (alien.x + alien.width > canvas.width || alien.x < 0) {
-      hitEdge = true;
+    // Solo se mueve si no está en proceso de explosión
+    if (!alien.exploding) {
+      alien.x += alienSpeed * alienDirection;
+      if (alien.x + alien.width > canvas.width || alien.x < 0) {
+        hitEdge = true;
+      }
     }
   });
   if (hitEdge) {
@@ -217,26 +191,25 @@ function moveAliens() {
 function collisionDetection() {
   for (let i = bullets.length - 1; i >= 0; i--) {
     for (let j = aliens.length - 1; j >= 0; j--) {
-      if (
-        bullets[i].x < aliens[j].x + aliens[j].width &&
-        bullets[i].x + bulletWidth > aliens[j].x &&
-        bullets[i].y < aliens[j].y + aliens[j].height &&
-        bullets[i].y + bulletHeight > aliens[j].y
-      ) {
-        let explosionX = aliens[j].x + aliens[j].width / 2;
-        let explosionY = aliens[j].y + aliens[j].height / 2;
-        addExplosion(explosionX, explosionY);
-        addScorePopup(explosionX, explosionY, "+10");
+      // Solo se detecta colisión en enemigos que aún no están explotando
+      if (!aliens[j].exploding &&
+          bullets[i].x < aliens[j].x + aliens[j].width &&
+          bullets[i].x + bulletWidth > aliens[j].x &&
+          bullets[i].y < aliens[j].y + aliens[j].height &&
+          bullets[i].y + bulletHeight > aliens[j].y) {
+        // Marcar al enemigo como explotando y establecer un timer
+        aliens[j].exploding = true;
+        aliens[j].explosionTimer = 15; // 15 frames de visualización de la explosión
+        addScorePopup(aliens[j].x + aliens[j].width / 2, aliens[j].y + aliens[j].height / 2, "+10");
         score += 10;
         bullets.splice(i, 1);
-        aliens.splice(j, 1);
         break;
       }
     }
   }
 }
 
-// Condición de fin de juego: si algún enemigo alcanza la nave
+// Condición de fin de juego: si algún enemigo (incluso el que explota) alcanza la nave
 function checkGameOver() {
   for (let alien of aliens) {
     if (alien.y + alien.height >= spaceship.y) {
@@ -278,12 +251,20 @@ function update() {
     collisionDetection();
   }
   
+  // Actualizar timer de explosión en enemigos
+  for (let i = aliens.length - 1; i >= 0; i--) {
+    if (aliens[i].exploding) {
+      aliens[i].explosionTimer--;
+      if (aliens[i].explosionTimer <= 0) {
+        aliens.splice(i, 1);
+      }
+    }
+  }
+  
   drawSpaceship();
   drawBullets();
   drawAliens();
   drawHUD();
-  updateExplosions();
-  drawExplosions();
   updateScorePopups();
   drawScorePopups();
   
